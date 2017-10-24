@@ -13,7 +13,7 @@ public class TimeServerHandler extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        log.info("Message received");
+        log.info(String.format("Message received on session %s", session.getId()));
 
         String str = message.toString();
         log.info(String.format("Message: >%s<", str));
@@ -30,7 +30,7 @@ public class TimeServerHandler extends IoHandlerAdapter {
 
     @Override
     public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
-        log.info(String.format("Session idle (count: %s)", session.getIdleCount(status)));
+        log.info(String.format("Session %s idle (count: %s)", session.getId(), session.getIdleCount(status)));
     }
 
     @Override
