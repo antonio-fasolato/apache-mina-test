@@ -2,7 +2,6 @@ package net.fasolato.mina.minatest;
 
 import org.apache.log4j.LogManager;
 import org.apache.log4j.Logger;
-import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
