@@ -36,5 +36,6 @@ public class TimeServerHandler extends IoHandlerAdapter {
     @Override
     public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
         log.error("Exception caught", cause);
+        session.closeNow();
     }
 }
