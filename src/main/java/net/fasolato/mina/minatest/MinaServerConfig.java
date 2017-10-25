@@ -27,6 +27,8 @@ public class MinaServerConfig {
     private int nioIdleTime;
     @Value("${nio.readBufferSize}")
     private int readBufferSize;
+    @Value("${nio.charset}")
+    private String nioCharset;
 
     @Autowired
     private DefaultIoFilterChainBuilder filterChainBuilder;
@@ -42,7 +44,7 @@ public class MinaServerConfig {
     public DefaultIoFilterChainBuilder defaultIoFilterChainBuilder() {
         DefaultIoFilterChainBuilder fcb = new DefaultIoFilterChainBuilder();
 //        fcb.addLast("logger", new LoggingFilter());
-        fcb.addLast("codec", new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));
+        fcb.addLast("codec", new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName(nioCharset))));
         return fcb;
     }
 
