@@ -9,11 +9,10 @@ import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PreDestroy;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
@@ -33,44 +32,50 @@ public class MinaServerConfig {
     @Value("${nio.log.traffic}")
     private boolean nioLogTraffic;
 
-    @Autowired
-    private DefaultIoFilterChainBuilder filterChainBuilder;
-    @Autowired
-    private TimeServerHandler timeServerHandler;
+    private IoAcceptor server;
 
-    @Bean
-    public TimeServerHandler timeServerHandler() {
-        return new TimeServerHandler();
+    @PreDestroy
+    public void cleanUp() throws Exception {
+        log.info("Closing application. Stopping server");
+        if (server != null) {
+            stopServer();
+        }
     }
 
-    @Bean
-    public DefaultIoFilterChainBuilder defaultIoFilterChainBuilder() {
+    public void startServer() {
+        log.info(String.format("Initializing ioAcceptor on port %s", port));
+        server = new NioSocketAcceptor();
+
         DefaultIoFilterChainBuilder fcb = new DefaultIoFilterChainBuilder();
         if (nioLogTraffic) {
             fcb.addLast("logger", new LoggingFilter());
         }
         fcb.addLast("codec", new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName(nioCharset))));
-        return fcb;
-    }
+        server.setFilterChainBuilder(fcb);
 
-    @Bean
-    public IoAcceptor ioAcceptor() {
-        log.info(String.format("Initializing ioAcceptor on port %s", port));
-        IoAcceptor acceptor = new NioSocketAcceptor();
+        server.setHandler(new TimeServerHandler());
 
-        acceptor.setFilterChainBuilder(filterChainBuilder);
-
-        acceptor.setHandler(timeServerHandler);
-
-        acceptor.getSessionConfig().setReadBufferSize(readBufferSize);
-        acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, nioIdleTime);
+        server.getSessionConfig().setReadBufferSize(readBufferSize);
+        server.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, nioIdleTime);
 
         try {
-            acceptor.bind(new InetSocketAddress(port));
+            server.bind(new InetSocketAddress(port));
         } catch (IOException e) {
             log.error("Error initializing bean:", e);
-            return acceptor;
         }
-        return null;
+    }
+
+    public void stopServer() {
+        if (server != null) {
+            server.unbind();
+        }
+    }
+
+    public String serverStatus() {
+        String toReturn;
+
+        toReturn = String.format("Server status is active: %s", server.isActive());
+
+        return toReturn;
     }
 }
