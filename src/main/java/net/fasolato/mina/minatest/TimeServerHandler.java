@@ -13,10 +13,10 @@ public class TimeServerHandler extends IoHandlerAdapter {
 
     @Override
     public void messageReceived(IoSession session, Object message) throws Exception {
-        log.info(String.format("Message received on session %s", session.getId()));
+        log.debug(String.format("Message received on session %s", session.getId()));
 
         String str = message.toString();
-        log.info(String.format("Message: >%s<", str));
+        log.debug(String.format("Message string: >%s<", str));
         if(str.trim().equalsIgnoreCase("quit")) {
             log.info("Closing connection");
             session.closeNow();
@@ -25,7 +25,7 @@ public class TimeServerHandler extends IoHandlerAdapter {
 
         Date date = new Date();
         session.write(date.toString());
-        log.info("Message written");
+        log.debug("Message written");
     }
 
     @Override

@@ -7,6 +7,7 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
+import org.apache.mina.filter.logging.LoggingFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,6 +30,8 @@ public class MinaServerConfig {
     private int readBufferSize;
     @Value("${nio.charset}")
     private String nioCharset;
+    @Value("${nio.log.traffic}")
+    private boolean nioLogTraffic;
 
     @Autowired
     private DefaultIoFilterChainBuilder filterChainBuilder;
@@ -43,7 +46,9 @@ public class MinaServerConfig {
     @Bean
     public DefaultIoFilterChainBuilder defaultIoFilterChainBuilder() {
         DefaultIoFilterChainBuilder fcb = new DefaultIoFilterChainBuilder();
-//        fcb.addLast("logger", new LoggingFilter());
+        if (nioLogTraffic) {
+            fcb.addLast("logger", new LoggingFilter());
+        }
         fcb.addLast("codec", new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName(nioCharset))));
         return fcb;
     }
